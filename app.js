@@ -5,6 +5,7 @@ const ejs=require("ejs");
 const mongoose=require("mongoose");
 const encrypt=require("mongoose-encryption");
 const app=express();
+const md5=require("md5");
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static("public"));
@@ -20,11 +21,11 @@ const userSchema=new mongoose.Schema({
 });
 
 
-userSchema.plugin(encrypt,{secret:process.env.ENCRY_KEY,encryptedFields:["password"]});
+//userSchema.plugin(encrypt,{secret:process.env.ENCRY_KEY,encryptedFields:["password"]});
 
 const User=new mongoose.model("User",userSchema);
 
-
+//Hash Function
 app.get("/",function(req,res){
   res.render("home");
 })
@@ -41,7 +42,7 @@ app.post("/login",function(req,res){
     if(!err){
       if(foundUser){
 
-        if(foundUser.password === req.body.password){
+        if(foundUser.password === md5(req.body.password)){
                 res.render("secrets");
         }
       }
@@ -55,7 +56,7 @@ app.post("/login",function(req,res){
 app.post("/register",function(req,res){
   const user=new User({
     email:req.body.username,
-    password:req.body.password
+    password:md5(req.body.password)
   });
   user.save(function(err){
     if(err)
